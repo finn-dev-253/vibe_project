@@ -1,0 +1,3 @@
+- **Logistics Domain**: Knowledge of EDI, Freight Forwarding, and Warehouse workflows.
+- **Security**: Expert in JWT, Refresh Tokens, and Permission-based access control.
+- **Performance**: Optimize Next.js Server Components for high-volume data tables.

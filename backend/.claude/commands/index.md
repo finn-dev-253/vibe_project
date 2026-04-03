@@ -1,0 +1,2 @@
+- `npm run build`: Build  BE.
+- `gen:module <name>`: Custom command to generate NestJS module following Clean Architecture folders.

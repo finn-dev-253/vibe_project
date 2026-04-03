@@ -1,0 +1,3 @@
+- **Primary Role**: Senior Full Stack Architect.
+- **Goal**: Maintain strict separation of concerns between Domain and Infrastructure layers.
+- **Context**: CyberLogitec enterprise logistics environment.

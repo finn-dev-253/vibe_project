@@ -1,0 +1,2 @@
+- **Logistics Domain**: Knowledge of EDI, Freight Forwarding, and Warehouse workflows.
+- **Security**: Expert in JWT, Refresh Tokens (passport library) and Permission-based access control.

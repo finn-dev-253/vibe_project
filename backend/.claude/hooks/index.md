@@ -1,0 +1,2 @@
+- **Pre-commit**: Run ESLint and Prettier.
+- **Post-feature**: Verify that no Database-specific code leaked into the `core/domain` folder.
