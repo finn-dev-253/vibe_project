@@ -8,6 +8,9 @@ import { UserEntity } from './infrastructure/database/entities/user.entity';
 import { RoleEntity } from './infrastructure/database/entities/role.entity';
 import { PermissionEntity } from './infrastructure/database/entities/permission.entity';
 import { UserPermissionsMVEntity } from './infrastructure/database/entities/user-permission-mv.entity';
+import { WarehouseModule } from './warehouse/warehouse.module';
+import { FinanceModule } from './finance/finance.module';
+import { AssetsModule } from './assets/assets.module';
 
 @Module({
   imports: [
@@ -31,6 +34,9 @@ import { UserPermissionsMVEntity } from './infrastructure/database/entities/user
       host: 'localhost',
       port: 6379,
     }),
+    WarehouseModule,
+    FinanceModule,
+    AssetsModule,
   ],
   controllers: [AppController],
   providers: [AppService],

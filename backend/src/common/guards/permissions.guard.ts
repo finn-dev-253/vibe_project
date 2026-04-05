@@ -21,9 +21,7 @@ export class PermissionsGuard implements CanActivate {
       return false; // Not authenticated
     }
 
-    // Usually, you would hit the Materialized View through a service here,
-    // but assuming JWT contains permissions or we inject a service.
-    // Let's assume user.permissions is populated by the JwtStrategy reading from the Materialized View
+    // User permissions are populated by the JwtStrategy which fetches them rapidly from Redis.
     const userPermissions = user.permissions || [];
 
     return requiredPermissions.every((permission) =>

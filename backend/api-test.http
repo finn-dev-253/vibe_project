@@ -1,0 +1,223 @@
+### ============================================================
+### RBAC API Test Suite
+### ============================================================
+### Run `npm run seed` before using these requests.
+###
+### Roles:
+###   admin            → all permissions
+###   warehouse_manager → warehouse:read/create/update/delete
+###   finance_manager  → finance:read/create/update/delete
+###   customer         → customer:assets:read, customer:assets:update
+###
+### Usage (VS Code REST Client):
+###   1. Run a login request (# @name loginXxx)
+###   2. The @xxxToken variable is populated automatically
+###   3. Run subsequent requests using that token
+### ============================================================
+
+@baseUrl = http://localhost:3002
+
+# ─── Auth ─────────────────────────────────────────────────────────────────────
+
+### Login as Admin
+# @name loginAdmin
+POST {{baseUrl}}/auth/login
+Content-Type: application/json
+
+{
+  "email": "admin@test.com",
+  "password": "password123"
+}
+
+###
+
+@adminToken = {{loginAdmin.response.body.access_token}}
+
+### Login as Warehouse Manager
+# @name loginWarehouse
+POST {{baseUrl}}/auth/login
+Content-Type: application/json
+
+{
+  "email": "warehouse@test.com",
+  "password": "password123"
+}
+
+###
+
+@warehouseToken = {{loginWarehouse.response.body.access_token}}
+
+### Login as Finance Manager
+# @name loginFinance
+POST {{baseUrl}}/auth/login
+Content-Type: application/json
+
+{
+  "email": "finance@test.com",
+  "password": "password123"
+}
+
+###
+
+@financeToken = {{loginFinance.response.body.access_token}}
+
+### Login as Customer
+# @name loginCustomer
+POST {{baseUrl}}/auth/login
+Content-Type: application/json
+
+{
+  "email": "customer@test.com",
+  "password": "password123"
+}
+
+###
+
+@customerToken = {{loginCustomer.response.body.access_token}}
+
+### Login — Validation error (missing password) → 400
+POST {{baseUrl}}/auth/login
+Content-Type: application/json
+
+{
+  "email": "admin@test.com"
+}
+
+### Login — Bad credentials → 401
+POST {{baseUrl}}/auth/login
+Content-Type: application/json
+
+{
+  "email": "admin@test.com",
+  "password": "wrong-password"
+}
+
+# ─── Admin: protected-roles endpoint ──────────────────────────────────────────
+
+### Admin — view roles (admin:roles:view) → 200
+GET {{baseUrl}}/auth/protected-roles
+Authorization: Bearer {{adminToken}}
+
+### Warehouse manager — view roles (missing admin:roles:view) → 403
+GET {{baseUrl}}/auth/protected-roles
+Authorization: Bearer {{warehouseToken}}
+
+### Customer — view roles (missing admin:roles:view) → 403
+GET {{baseUrl}}/auth/protected-roles
+Authorization: Bearer {{customerToken}}
+
+# ─── Warehouse endpoints ───────────────────────────────────────────────────────
+
+### Warehouse manager — GET /warehouse (warehouse:read) → 200
+GET {{baseUrl}}/warehouse
+Authorization: Bearer {{warehouseToken}}
+
+### Warehouse manager — POST /warehouse (warehouse:create) → 201
+POST {{baseUrl}}/warehouse
+Authorization: Bearer {{warehouseToken}}
+
+### Warehouse manager — PUT /warehouse/1 (warehouse:update) → 200
+PUT {{baseUrl}}/warehouse/1
+Authorization: Bearer {{warehouseToken}}
+
+### Warehouse manager — DELETE /warehouse/1 (warehouse:delete) → 200
+DELETE {{baseUrl}}/warehouse/1
+Authorization: Bearer {{warehouseToken}}
+
+### Finance manager — GET /warehouse (missing warehouse:read) → 403
+GET {{baseUrl}}/warehouse
+Authorization: Bearer {{financeToken}}
+
+### Customer — GET /warehouse (missing warehouse:read) → 403
+GET {{baseUrl}}/warehouse
+Authorization: Bearer {{customerToken}}
+
+### Admin — GET /warehouse (has all permissions) → 200
+GET {{baseUrl}}/warehouse
+Authorization: Bearer {{adminToken}}
+
+# ─── Finance endpoints ────────────────────────────────────────────────────────
+
+### Finance manager — GET /finance (finance:read) → 200
+GET {{baseUrl}}/finance
+Authorization: Bearer {{financeToken}}
+
+### Finance manager — POST /finance (finance:create) → 201
+POST {{baseUrl}}/finance
+Authorization: Bearer {{financeToken}}
+
+### Finance manager — PUT /finance/1 (finance:update) → 200
+PUT {{baseUrl}}/finance/1
+Authorization: Bearer {{financeToken}}
+
+### Finance manager — DELETE /finance/1 (finance:delete) → 200
+DELETE {{baseUrl}}/finance/1
+Authorization: Bearer {{financeToken}}
+
+### Warehouse manager — GET /finance (missing finance:read) → 403
+GET {{baseUrl}}/finance
+Authorization: Bearer {{warehouseToken}}
+
+### Customer — GET /finance (missing finance:read) → 403
+GET {{baseUrl}}/finance
+Authorization: Bearer {{customerToken}}
+
+### Admin — GET /finance (has all permissions) → 200
+GET {{baseUrl}}/finance
+Authorization: Bearer {{adminToken}}
+
+# ─── Assets endpoints (Customer) ──────────────────────────────────────────────
+
+### Customer — GET /assets/my (customer:assets:read) → 200
+GET {{baseUrl}}/assets/my
+Authorization: Bearer {{customerToken}}
+
+### Customer — PATCH /assets/my/1 (customer:assets:update) → 200
+PATCH {{baseUrl}}/assets/my/1
+Authorization: Bearer {{customerToken}}
+Content-Type: application/json
+
+{
+  "name": "Updated Fleet A",
+  "value": 175000
+}
+
+### Customer — PATCH /assets/my/999 (non-existent asset) → 404
+PATCH {{baseUrl}}/assets/my/999
+Authorization: Bearer {{customerToken}}
+Content-Type: application/json
+
+{
+  "name": "Does not exist"
+}
+
+### Customer — GET /assets (missing system:admin) → 403
+GET {{baseUrl}}/assets
+Authorization: Bearer {{customerToken}}
+
+### Warehouse manager — GET /assets/my (missing customer:assets:read) → 403
+GET {{baseUrl}}/assets/my
+Authorization: Bearer {{warehouseToken}}
+
+### Finance manager — GET /assets/my (missing customer:assets:read) → 403
+GET {{baseUrl}}/assets/my
+Authorization: Bearer {{financeToken}}
+
+### Admin — GET /assets (system:admin) → 200
+GET {{baseUrl}}/assets
+Authorization: Bearer {{adminToken}}
+
+### Admin — GET /assets/my (admin has customer:assets:read too) → 200
+GET {{baseUrl}}/assets/my
+Authorization: Bearer {{adminToken}}
+
+# ─── No token (unauthenticated) ───────────────────────────────────────────────
+
+### No token — GET /warehouse → 401
+GET {{baseUrl}}/warehouse
+
+### No token — GET /finance → 401
+GET {{baseUrl}}/finance
+
+### No token — GET /assets/my → 401
+GET {{baseUrl}}/assets/my
